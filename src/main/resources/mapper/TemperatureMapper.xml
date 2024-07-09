@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wpp.dao.TemperatureDao">
+    <select id="getTemperaById" parameterType="map"
+            resultType="com.wpp.pojo.Temperature">
+        SELECT * FROM temperatures WHERE
+        1 = 1
+        <if test="id != null">
+            AND id = #{id, jdbcType=INTEGER}
+        </if>
+        <if test="date != null">
+            AND date = #{date}
+        </if>
+    </select>
+    <insert id="insertTemperature" parameterType="com.wpp.pojo.Temperature" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO temperatures (id, date, temperature)
+        VALUES (#{id}, #{date}, #{temperature})
+    </insert>
+<!--    <select id="getUserById2" parameterType="int"-->
+<!--            resultType="com.wpp.pojo.User">-->
+<!--        select * from user where id = #{id}-->
+<!--    </select>-->
+
+</mapper>
+

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>折线图</title>
+<!--    <script src="../static/js/Chart.js"></script>-->
+<!--    <link rel="stylesheet" href="../static/css/bootstrap.min.css">-->
+<!--    <script src="../static/js/bootstrap.bundle.min.js"></script>-->
+<!--    <script src="../static/js/temp.js"></script>-->
+<!--    <script src="../static/js/jquery.js"></script>-->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <script th:src="@{/js/jquery.js}"></script>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/Chart.js}"></script>
+    <script th:src="@{/js/temp.js}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* 设置背景颜色为浅黑色 */
+        .bg-light-black {
+            background-color: #333333; /* 这是浅黑色的颜色代码 */
+        }
+
+        /* 设置文本颜色为浅黑色 */
+        .text-light-black {
+            color: #333333; /* 这是浅黑色的颜色代码 */
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+        </div>
+        <div class="row card-body">
+            <div class="col-md-2" style="background: #333333; color: #007bff;">
+                <!-- 左侧导航栏 -->
+                <nav id="sidebar" class="navbar-expand-sm navbar-light">
+                    <div class="position-sticky">
+                        <!-- 搜索框 -->
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="搜索">
+                        </div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <!-- 温湿度菜单项 -->
+                                <a class="nav-link" data-bs-toggle="collapse" href="#tempHumidityMenu" aria-expanded="false" style="background: #0c0c0c">
+                                    <span class="text-white" >温湿度</span>
+                                </a>
+                                <!-- 子菜单项：温度 -->
+                                <div class="collapse" id="tempHumidityMenu" style="background: #0c0c0c">
+                                    <ul class="nav flex-column pl-3">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/getTemp">
+                                                <span class="text-white">&nbsp;&nbsp;&nbsp;&nbsp;温度</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                <span class="text-white">&nbsp;&nbsp;&nbsp;&nbsp;湿度</span>
+                                            </a>
+                                        </li>
+                                        <!-- 添加更多子菜单项... -->
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item" style="background: #0c0c0c" >
+                                <a class="nav-link active" href="#">
+                                    <span class="text-white">报警</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <!-- 温湿度阈值菜单项 -->
+                                <a class="nav-link" data-bs-toggle="collapse" href="#measureSet" aria-expanded="false" style="background: #0c0c0c">
+                                    <span class="text-white" >温湿度</span>
+                                </a>
+                                <!-- 子菜单项：温度 -->
+                                <div class="collapse" id="measureSet" style="background: #0c0c0c">
+                                    <ul class="nav flex-column pl-3">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/getNowMeasure">
+                                                <span class="text-white">&nbsp;&nbsp;&nbsp;&nbsp;当前阈值查询</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                <span class="text-white">&nbsp;&nbsp;&nbsp;&nbsp;阈值设置</span>
+                                            </a>
+                                        </li>
+                                        <!-- 添加更多子菜单项... -->
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <div class="col-md-10">
+                <h1 class="offset-1"></h1>
+
+                <div class="row">
+                    <div class="col-sm-5 col-md-5">
+                        <div class="row offset-3">
+                            <h4> <span class="badge bg-primary">温度计一</span></h4>
+                        </div>
+                        <canvas id="myChart1"></canvas>
+                    </div>
+
+                    <div class="col-sm-5 col-md-5">
+                        <div class="row offset-5">
+                            <h4> <span class="badge bg-primary">温度计二</span></h4>
+                        </div>
+                        <canvas id="myChart2"></canvas>
+                    </div>
+                    <div class="col-sm-2 col-md-2 mt-5">
+                        <div id="temp"></div>
+                        <div id="tempNum"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3 col-md-3">
+<!--                        <button type="button" class="btn btn-success" onclick="updateChart()">刷新</button>-->
+<!--                        <button type="button" class="btn btn-success">清空</button>-->
+<!--                        <button type="button" class="btn btn-success">返回</button>-->
+<!--                        <button type="button" class="btn btn-success" onclick="addValue()">增加值测试</button>-->
+                        <button type="button" class="btn btn-success" onclick="viewValue()">快照</button>
+<!--                        <label for="exampleSelect" class="form-label btn-success"></label>-->
+<!--                        <select class="form-select" id="exampleSelect">-->
+<!--                            <option selected id="TA">全部</option>-->
+<!--                            <option id="T1">温度计一</option>-->
+<!--                            <option id="T2">温度计二</option>-->
+<!--                        </select>-->
+                        <button type="button" class="btn btn-success" onclick="getNowValue()">获取当前值</button>
+                        <div class="form-group">
+                            <label >Counter:</label>
+                            <!-- 创建一个文本框 -->
+                            <input type="text" class="form-control" id="getTempInput" value="0" readonly>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+    </div>
+</div>
+</div>
+
+
+<script>
+
+    var ctx1 = document.getElementById("myChart1").getContext("2d");
+    var ctx2 = document.getElementById("myChart2").getContext("2d");
+    var newData = [1, 10, 20, 31, 46, 55, 60];
+    var oldData = [65, 59, 80, 81, 56, 55, 40];
+    var initLabels = ["1", "2", "3", "4", "5", "6", "7"];
+    var temper = new TempBar("#temp")
+    temper.setValue(28)
+    // 设置数据内容
+    var data = {
+        // 设置图表中水平轴显示的内容
+        labels: initLabels,
+        // 设置图表中的数据
+        datasets: [
+            {
+                // 当前图表数据的标题内容
+                label: "温度计一",
+                // 是否填充折线与水平轴中间的区域
+                fill: true,
+                // 设置折线数据点的贝塞尔曲线值（值为0时为折线）
+                lineTension: 0.1,
+                // 设置背景颜色
+                // backgroundColor: "rgba(75,192,192,0.4)",
+                // 设置边框颜色
+                // borderColor: "rgba(75,192,192,1)",
+                // 设置折线端点的样式
+                borderCapStyle: 'butt',
+                // 破折号的长度和间距
+                borderDash: [],
+                // 破折号的偏移量
+                borderDashOffset: 0.0,
+                // 设置折线交点的样式
+                borderJoinStyle: 'miter',
+                // 设置折线数据点的边框颜色
+                // pointBorderColor: "rgba(75,192,192,1)",
+                // 设置折线数据点的背景颜色
+                // pointBackgroundColor: "#fff",
+                // 设置折线数据点的边框宽度
+                pointBorderWidth: 1,
+                // 设置当鼠标悬停折线数据点时的半径
+                pointHoverRadius: 5,
+                // 设置当鼠标悬停折线数据点时的背景颜色
+                // pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                // 设置当鼠标悬停折线数据点时的边框颜色
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                // 设置当鼠标悬停折线数据点时的边框宽度
+                pointHoverBorderWidth: 2,
+                // 设置折线数据点的半径
+                pointRadius: 1,
+                //
+                pointHitRadius: 10,
+                // 设置折线中所有的数据
+                data: oldData,
+                // 如果设置为true，将在没有数据或空数据的点之间绘制直线
+                spanGaps: false,
+            }
+        ]
+    };
+    var data2 = {
+        // 设置图表中水平轴显示的内容
+        labels: initLabels,
+        // 设置图表中的数据
+        datasets: [
+            {
+                // 当前图表数据的标题内容
+                label: "温度计二",
+                backgroundColor: "rgba(0,99,132,0.4)",
+                // 设置边框颜色
+                borderColor: "rgba(0,99,132,1)",
+                // 设置折线端点的样式
+                borderCapStyle: 'butt',
+                // 设置折线数据点的边框宽度
+                pointBorderWidth: 1,
+                // 设置当鼠标悬停折线数据点时的半径
+                pointHoverRadius: 5,
+                // 设置当鼠标悬停折线数据点时的边框颜色
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                // 设置当鼠标悬停折线数据点时的边框宽度
+                pointHoverBorderWidth: 2,
+                // 设置折线数据点的半径
+                pointRadius: 1,
+                //
+                pointHitRadius: 10,
+                // 设置折线中所有的数据
+                data: oldData,
+                // 如果设置为true，将在没有数据或空数据的点之间绘制直线
+                spanGaps: false,
+            }
+        ]
+    };
+
+    options = {
+        scales: {
+            x: {
+                type: 'time',
+                time: {
+                    unit: 'second', // 设置 x 坐标轴的单位为秒
+                    stepSize: 5, // 设置步长为 5 秒
+                    displayFormats: {
+                        econd: 'HH:mm:ss', // 显示的时间格式为时分秒
+                    },
+                },
+            },
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: '温度 (°C)', // 添加摄氏度单位
+                },
+            },
+        },
+    };
+    var myLineChart1 = new Chart(ctx1, {
+        type: 'line',
+        data: data,
+        options: options
+    });
+    var myLineChart2 = new Chart(ctx2, {
+        type: 'line',
+        data: data2,
+        options: options
+    });
+    function updateChart(){
+        let myLineChart;
+        let value = readSelectedOption();
+        let id = value.slice(1);
+        console.log(id);
+        if(id === 'A'){
+
+        }else if( id === '1' ){
+            myLineChart = myLineChart1;
+        }else if(id === '2'){
+            myLineChart = myLineChart2;
+        }
+        myLineChart.data.datasets[0].data= newData;
+        myLineChart.update();
+    }
+    var i = 7;
+    function addValue(){
+        myLineChart = myLineChart2;
+        i = i + 1;
+        if(myLineChart.data.labels.length === 12){
+            myLineChart.data.labels.shift();
+            myLineChart.data.datasets[0].data.shift();
+        }
+        if(i === 24){
+            i = 1;
+        }
+        myLineChart.data.labels.push(i);
+        myLineChart.data.datasets[0].data.push(i);
+        myLineChart.update();
+    }
+    function viewValue(){
+        myLineChart2.update();
+    }
+    function readSelectedOption() {
+        // 获取<select>元素
+        var selectElement = document.getElementById("exampleSelect");
+
+        // 获取选中的选项
+        var selectedOption = selectElement.options[selectElement.selectedIndex];
+
+        // 读取选中的选项的值和文本内容
+        var selectedValue = selectedOption.value;
+        var selectedId = selectedOption.id;
+
+        // 在控制台输出选中的选项信息（可根据需要进行其他操作）
+        console.log("选中的值: " + selectedValue);
+        console.log("选中的Id: " + selectedId);
+        return selectedId;
+    }
+    function getYMDHMS() {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = (d.getMonth() + 1).toString().padStart(2, '0');
+        var dt = d.getDate().toString().padStart(2, '0');
+        var hour = d.getHours().toString().padStart(2, '0');
+        var minu = d.getMinutes().toString().padStart(2, '0');
+        var sec = (d.getSeconds()).toString().padStart(2, '0');
+        var now = year + "-" + month + "-" + dt + "T" + hour + ":" + minu + ":" + sec;
+        return now;
+    }
+
+    setInterval(function() {
+        let currentTime = getYMDHMS();
+        oldTime = data.labels[data.labels.length - 1];
+        const currentSeconds = parseInt(oldTime.split(':')[2], 10);
+        // 检查秒是否是5的倍数
+        if (currentSeconds % 5 !== 0) {
+            // 当前秒是5的倍数，执行你的操作
+            data.labels[data.labels.length - 1]='';
+        }
+        let indexOfT =  currentTime.indexOf('T'); // 找到 'T' 的索引位置
+        let charactersAfterT = currentTime.substring(indexOfT + 1); // 获取 'T' 之后的字符
+        data.labels.push(charactersAfterT);
+        // 获取当前时间的时分秒
+
+        // 构建要发送的数据对象
+        var dataToSend = {
+            id: 1,
+            date: currentTime+"+08:00",
+            temperature: 1.0
+        };
+        $.ajax({
+            url: '/getNowTemp',
+            type: 'post',
+            dataType: 'json',
+            contentType: "application/json;charest=UTF-8",
+            data: JSON.stringify(dataToSend),
+            async:false,
+            success: function (tempData) {
+                tempNum = tempData.temperature;
+                temper.setValue(tempNum);
+                data.datasets[0].data.push(tempNum);
+                // 限制数据点数量
+                if (data.labels.length > 20) {
+                    data.labels.shift();
+                    data.datasets[0].data.shift();
+                }
+                myLineChart1.update(); // 更新图表
+                document.getElementById("tempNum").textContent=tempNum;
+            },
+            error: function (xhr, status, error) {
+                // 请求失败，处理错误
+
+            }
+        });
+
+    }, 1000);
+
+
+    function getNowValue(){
+        // 获取当前时间的时分秒
+        let currentTime = getYMDHMS()
+        // 构建要发送的数据对象
+        var dataToSend = {
+            id: 1,
+            date: currentTime,
+            temperature: 1.0
+        };
+        $.ajax({
+            url: '/getTempByDate',
+            type: 'post',
+            dataType: 'json',
+            contentType: "application/json;charest=UTF-8",
+            data: JSON.stringify(dataToSend),
+            success: function (tempData) {
+                let currentTemp = $("#getTempInput");
+                let temperature = tempData.temperature;
+                if(temperature !== -1){
+                    currentTemp.val(temperature);
+                }else {
+                    currentTemp.val("err");
+                }
+            },
+            error: function (xhr, status, error) {
+                // 请求失败，处理错误
+                $('#result').text('请求失败：' + error);
+                return -1;
+            }
+        });
+    }
+
+</script>
+</body>
+</html>
